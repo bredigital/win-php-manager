@@ -10,7 +10,7 @@ Can also be used to maintain a fixed directory with adjustable PHP versions.
 https://github.com/bredigital/win-php-manager
 
 .NOTES
-Version:        1.0
+Version:        1.0.1
 Author:         Casey Lambie, BRE Digital
 Creation Date:  17/01/2020
 License:        GPL-3.0
@@ -33,12 +33,19 @@ param (
     [switch]$symlink = $false
 )
 
-# No PHP version specified? Let's find the latest release.
 $majorVersion = 7;
-if ( -not ( $version ) ) {
+$versionSplit = $version.split(".");
+
+# No PHP version specified? Let's find the latest release.
+if ( ( -not ( $version ) ) -or ( $versionSplit.count -lt 3 ) ) {
     try{
-        $a = Invoke-RestMethod -Uri "https://www.php.net/releases/index.php?json&version=${majorVersion}&max=1"  -TimeoutSec 2;
-        $version = $a.PSObject.Properties.Name;
+        $v = $majorVersion;
+        if ( $versionSplit.count -gt 1 ) {
+            $v = $version;
+        }
+
+        $request = Invoke-RestMethod -Uri "https://www.php.net/releases/index.php?json&version=${v}&max=1"  -TimeoutSec 2;
+        $version = $request.PSObject.Properties.Name;
         if ( $version -eq 'error' ) {
             Write-Host "No version specified. Bad response from PHP APIs (got '${version}'). Exiting.";
             return;
@@ -79,6 +86,7 @@ try {
 Expand-Archive -Path "${destination}\php.zip" -DestinationPath "${destination}\${version}";
 Remove-Item    -Path "${destination}\php.zip";
 
+# Reverse the version no. by 1 to see if an existing copy can be copied.
 $versionSplit    = $version.split(".");
 $versionSplit[2] = $versionSplit[2] - 1;
 $previousVersion = $versionSplit -Join ".";
