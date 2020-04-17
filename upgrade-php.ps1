@@ -57,7 +57,7 @@ if ( ( -not ( $version ) ) -or ( $versionSplit.count -lt 3 ) ) {
 }
 
 # If symlink is desired, check if running in an elevated prompt.
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent());
 $runningAsAdmin   = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator);
 if( ( $symlink -eq $true ) -and ( $runningAsAdmin -eq $false ) ) {
     Write-Host "Symlinking the PHP version requires administrative prvilegess.";
@@ -94,7 +94,7 @@ $previousVersion = $versionSplit -Join ".";
 # Copy previous installation configuration and missing extensions.
 if( Test-Path -Path "${destination}\${previousVersion}" ) {
     Write-Host "Coping configuration file from ${previousVersion}.";
-    Copy-Item -Path "${destination}\${previousVersion}\php.ini" -Destination "${destination}\${version}\php.ini"
+    Copy-Item -Path "${destination}\${previousVersion}\php.ini" -Destination "${destination}\${version}\php.ini";
 
     $old_extpath = "${destination}\${previousVersion}\ext";
     $new_extpath = "${destination}\${version}\ext";
@@ -103,12 +103,12 @@ if( Test-Path -Path "${destination}\${previousVersion}" ) {
         $filename = $_;
         if( -Not ( Test-Path -Path "${new_extpath}\${filename}" ) ) {
             Write-Host "Copying '${filename}' over to the new version.";
-            Copy-Item -Path "${old_extpath}\${filename}" -Destination "${new_extpath}\${filename}"
+            Copy-Item -Path "${old_extpath}\${filename}" -Destination "${new_extpath}\${filename}";
         }
     }
 } else {
     Write-Host "No previous version was found. Initating config with default production settings.";
-    Copy-Item -Path "${destination}\${version}\php.ini-production" -Destination "${destination}\${version}\php.ini"
+    Copy-Item -Path "${destination}\${version}\php.ini-production" -Destination "${destination}\${version}\php.ini";
 }
 
 # Create/replace symlink to this version.
