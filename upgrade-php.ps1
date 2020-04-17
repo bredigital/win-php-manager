@@ -71,27 +71,27 @@ if( Test-Path -Path "${destination}\${version}" ) {
 }
 
 # Probe the PHP site (and archive) for desired PHP version.
+$dlTempName = [System.IO.Path]::GetRandomFileName();
 Write-Host "Downloading PHP ${version} from windows.php.net.";
 try {
-    Invoke-WebRequest https://windows.php.net/downloads/releases/php-$version-nts-Win32-VC15-x64.zip -OutFile "${destination}\php.zip";
+    Invoke-WebRequest https://windows.php.net/downloads/releases/php-$version-nts-Win32-VC15-x64.zip -OutFile "${destination}\${dlTempName}.zip";
 } catch {
     Write-Host "Not found in release. Looking in archives.";
     try {
-        Invoke-WebRequest https://windows.php.net/downloads/releases/archives/php-$version-nts-Win32-VC15-x64.zip -OutFile "${destination}\php.zip";
+        Invoke-WebRequest https://windows.php.net/downloads/releases/archives/php-$version-nts-Win32-VC15-x64.zip -OutFile "${destination}\${dlTempName}.zip";
     } catch {
         Write-Host "Not found in archive. Exiting.";
         return;
     }
 }
-Expand-Archive -Path "${destination}\php.zip" -DestinationPath "${destination}\${version}";
-Remove-Item    -Path "${destination}\php.zip";
+Expand-Archive -Path "${destination}\${dlTempName}.zip" -DestinationPath "${destination}\${version}";
+Remove-Item    -Path "${destination}\${dlTempName}.zip";
 
 # Reverse the version no. by 1 to see if an existing copy can be copied.
 $versionSplit    = $version.split(".");
 $versionSplit[2] = $versionSplit[2] - 1;
 $oldFound        = $false;
 for ( $i = [int]$versionSplit[2]; $i -gt 0; $i-- ) {
-    Write-Host $i;
     $versionSplit[2] = $i;
     $previousVersion = $versionSplit -Join ".";
     if( Test-Path -Path "${destination}\${previousVersion}" ) {
