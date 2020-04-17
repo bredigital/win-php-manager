@@ -60,7 +60,7 @@ if ( ( -not ( $version ) ) -or ( $versionSplit.count -lt 3 ) ) {
 $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent());
 $runningAsAdmin   = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator);
 if( ( $symlink -eq $true ) -and ( $runningAsAdmin -eq $false ) ) {
-    Write-Host "Symlinking the PHP version requires administrative prvilegess.";
+    Write-Host "Symlinking the PHP version requires administrative privileges.";
     exit;
 }
 
