@@ -89,24 +89,33 @@ Remove-Item    -Path "${destination}\php.zip";
 # Reverse the version no. by 1 to see if an existing copy can be copied.
 $versionSplit    = $version.split(".");
 $versionSplit[2] = $versionSplit[2] - 1;
-$previousVersion = $versionSplit -Join ".";
+$oldFound        = $false;
+for ( $i = [int]$versionSplit[2]; $i -gt 0; $i-- ) {
+    Write-Host $i;
+    $versionSplit[2] = $i;
+    $previousVersion = $versionSplit -Join ".";
+    if( Test-Path -Path "${destination}\${previousVersion}" ) {
+        # Copy previous installation configuration and missing extensions.
+        $oldFound = $true;
+        Write-Host "Coping configuration file from ${previousVersion}.";
+        Copy-Item -Path "${destination}\${previousVersion}\php.ini" -Destination "${destination}\${version}\php.ini";
 
-# Copy previous installation configuration and missing extensions.
-if( Test-Path -Path "${destination}\${previousVersion}" ) {
-    Write-Host "Coping configuration file from ${previousVersion}.";
-    Copy-Item -Path "${destination}\${previousVersion}\php.ini" -Destination "${destination}\${version}\php.ini";
-
-    $old_extpath = "${destination}\${previousVersion}\ext";
-    $new_extpath = "${destination}\${version}\ext";
-    Get-ChildItem $old_extpath -Filter *.dll |
-    Foreach-Object {
-        $filename = $_;
-        if( -Not ( Test-Path -Path "${new_extpath}\${filename}" ) ) {
-            Write-Host "Copying '${filename}' over to the new version.";
-            Copy-Item -Path "${old_extpath}\${filename}" -Destination "${new_extpath}\${filename}";
+        $old_extpath = "${destination}\${previousVersion}\ext";
+        $new_extpath = "${destination}\${version}\ext";
+        Get-ChildItem $old_extpath -Filter *.dll |
+        Foreach-Object {
+            $filename = $_;
+            if( -Not ( Test-Path -Path "${new_extpath}\${filename}" ) ) {
+                Write-Host "Copying '${filename}' over to the new version.";
+                Copy-Item -Path "${old_extpath}\${filename}" -Destination "${new_extpath}\${filename}";
+            }
         }
+
+        break;
     }
-} else {
+}
+
+if ( $oldFound -eq $false ) {
     Write-Host "No previous version was found. Initating config with default production settings.";
     Copy-Item -Path "${destination}\${version}\php.ini-production" -Destination "${destination}\${version}\php.ini";
 }
